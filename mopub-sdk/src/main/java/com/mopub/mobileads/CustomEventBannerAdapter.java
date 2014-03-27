@@ -32,26 +32,28 @@
 
 package com.mopub.mobileads;
 
-import android.content.Context;
-import android.os.Handler;
-import android.util.Log;
-import android.view.View;
-import com.mopub.mobileads.CustomEventBanner.CustomEventBannerListener;
-import com.mopub.mobileads.factories.CustomEventBannerFactory;
-import com.mopub.mobileads.util.Json;
-
-import java.util.*;
-
 import static com.mopub.mobileads.AdFetcher.AD_CONFIGURATION_KEY;
 import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_NOT_FOUND;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_TIMEOUT;
 import static com.mopub.mobileads.MoPubErrorCode.UNSPECIFIED;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import android.app.Activity;
+import android.os.Handler;
+import android.util.Log;
+import android.view.View;
+
+import com.mopub.mobileads.CustomEventBanner.CustomEventBannerListener;
+import com.mopub.mobileads.factories.CustomEventBannerFactory;
+import com.mopub.mobileads.util.Json;
+
 public class CustomEventBannerAdapter implements CustomEventBannerListener {
     public static final int DEFAULT_BANNER_TIMEOUT_DELAY = 10000;
     private boolean mInvalidated;
     private MoPubView mMoPubView;
-    private Context mContext;
+    private Activity mContext;
     private CustomEventBanner mCustomEventBanner;
     private Map<String, Object> mLocalExtras;
     private Map<String, String> mServerExtras;
@@ -63,7 +65,7 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
     public CustomEventBannerAdapter(MoPubView moPubView, String className, String classData) {
         mHandler = new Handler();
         mMoPubView = moPubView;
-        mContext = moPubView.getContext();
+        mContext = moPubView.getActivity();
         mLocalExtras = new HashMap<String, Object>();
         mServerExtras = new HashMap<String, String>();
         mTimeout = new Runnable() {

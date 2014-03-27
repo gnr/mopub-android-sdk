@@ -32,6 +32,7 @@
 
 package com.mopub.mobileads;
 
+import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import com.mopub.mobileads.MraidView.ViewState;
@@ -48,7 +49,7 @@ class MraidBanner extends CustomEventBanner {
     private CustomEventBannerListener mBannerListener;
 
     @Override
-    protected void loadBanner(Context context,
+    protected void loadBanner(Activity activity,
                     CustomEventBannerListener customEventBannerListener,
                     Map<String, Object> localExtras,
                     Map<String, String> serverExtras) {
@@ -63,7 +64,7 @@ class MraidBanner extends CustomEventBanner {
         }
 
         AdConfiguration adConfiguration = AdConfiguration.extractFromMap(localExtras);
-        mMraidView = MraidViewFactory.create(context, adConfiguration);
+        mMraidView = MraidViewFactory.create(activity, adConfiguration);
         mMraidView.loadHtmlData(htmlData);
         initMraidListener();
     }

@@ -32,6 +32,7 @@
 
 package com.mopub.mobileads;
 
+import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import com.mopub.mobileads.factories.HtmlBannerWebViewFactory;
@@ -50,7 +51,7 @@ public class HtmlBanner extends CustomEventBanner {
 
     @Override
     protected void loadBanner(
-            Context context,
+    		Activity activity,
             CustomEventBannerListener customEventBannerListener,
             Map<String, Object> localExtras,
             Map<String, String> serverExtras) {
@@ -70,7 +71,7 @@ public class HtmlBanner extends CustomEventBanner {
         }
 
         AdConfiguration adConfiguration = AdConfiguration.extractFromMap(localExtras);
-        mHtmlBannerWebView = HtmlBannerWebViewFactory.create(context, customEventBannerListener, isScrollable, redirectUrl, clickthroughUrl, adConfiguration);
+        mHtmlBannerWebView = HtmlBannerWebViewFactory.create(activity, customEventBannerListener, isScrollable, redirectUrl, clickthroughUrl, adConfiguration);
         AdViewController.setShouldHonorServerDimensions(mHtmlBannerWebView);
         mHtmlBannerWebView.loadHtmlResponse(htmlData);
     }
