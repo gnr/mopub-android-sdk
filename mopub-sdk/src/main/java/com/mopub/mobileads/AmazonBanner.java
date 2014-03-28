@@ -11,7 +11,6 @@ import com.amazon.device.ads.AdError.ErrorCode;
 import com.amazon.device.ads.AdLayout;
 import com.amazon.device.ads.AdListener;
 import com.amazon.device.ads.AdProperties;
-import com.amazon.device.ads.AdSize;
 import com.amazon.device.ads.AdTargetingOptions;
 
 public class AmazonBanner extends CustomEventBanner implements AdListener {
@@ -27,11 +26,19 @@ public class AmazonBanner extends CustomEventBanner implements AdListener {
         mBannerListener = bannerListener;
 
         Log.d("AmazonBanner", "loadAd()");
-        mAmazonAd = new AdLayout(activity, AdSize.SIZE_320x50);
-        mAmazonAd.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+        mAmazonAd = new AdLayout(activity);
+        
+        // auto size the banner to fit the screen width
+        mAmazonAd.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+
+        // this is how to set the banner size explicitly
+//        mAmazonAd = new AdLayout(activity, AdSize.SIZE_320x50);
+//        float scale = activity.getApplicationContext().getResources().getDisplayMetrics().density;
+//        LayoutParams layoutParams = new FrameLayout.LayoutParams((int) (320 * scale), (int) (50 * scale), Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+//        mAmazonAd.setLayoutParams(layoutParams);
+        
         mAmazonAd.setListener(this);
         mAmazonAd.loadAd(new AdTargetingOptions());
-//		mBannerListener.setAdContentView(mAmazonAd);
     }
 
     @Override
