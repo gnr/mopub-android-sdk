@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.util.Log;
 import android.view.ViewGroup.LayoutParams;
 
+import com.amazon.device.ads.Ad;
 import com.amazon.device.ads.AdError;
 import com.amazon.device.ads.AdError.ErrorCode;
 import com.amazon.device.ads.AdLayout;
@@ -51,18 +52,9 @@ public class AmazonBanner extends CustomEventBanner implements AdListener {
     /*
      * Methods from Amazon's AdListener
      */
-	@Override
-	public void onAdCollapsed(AdLayout view) {
-        Log.d("AmazonBanner", "onAdCollapsed()");
-	}
 
 	@Override
-	public void onAdExpanded(AdLayout view) {
-        Log.d("AmazonBanner", "onAdExpanded()");
-	}
-
-	@Override
-	public void onAdFailedToLoad(AdLayout view, AdError error) {
+	public void onAdFailedToLoad(Ad view, AdError error) {
 		final ErrorCode code = error.getCode();
 		MoPubErrorCode moPubCode = MoPubErrorCode.NO_FILL;
 		if(code == ErrorCode.NETWORK_ERROR) {
@@ -80,8 +72,23 @@ public class AmazonBanner extends CustomEventBanner implements AdListener {
 	}
 
 	@Override
-	public void onAdLoaded(AdLayout view, AdProperties adProperties) {
+	public void onAdLoaded(Ad view, AdProperties adProperties) {
         Log.d("AmazonBanner", "onAdLoaded()");
 		mBannerListener.onBannerLoaded(mAmazonAd);
+	}
+
+	@Override
+	public void onAdCollapsed(Ad view) {
+		Log.d("AmazonBanner", "onAdCollapsed()");
+	}
+
+	@Override
+	public void onAdDismissed(Ad view) {
+		Log.d("AmazonBanner", "onAdDismissed()");
+	}
+
+	@Override
+	public void onAdExpanded(Ad view) {
+		Log.d("AmazonBanner", "onAdExpanded()");
 	}
 }
