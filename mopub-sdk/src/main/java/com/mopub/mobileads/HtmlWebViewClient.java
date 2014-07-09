@@ -40,6 +40,10 @@ import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.mopub.common.MoPubBrowser;
+import com.mopub.common.util.IntentUtils;
+import com.mopub.mobileads.util.Utils;
+
 import static com.mopub.mobileads.MoPubErrorCode.UNSPECIFIED;
 
 class HtmlWebViewClient extends WebViewClient {
@@ -66,17 +70,16 @@ class HtmlWebViewClient extends WebViewClient {
             return true;
         }
 
-        url = urlWithClickTrackingRedirect(url);
         Log.d("MoPub", "Ad clicked. Click URL: " + url);
 
         // this is added because http/s can also be intercepted
-        if (!isWebSiteUrl(url) && Utils.canHandleApplicationUrl(mContext, url)) {
+        if (!isWebSiteUrl(url) && IntentUtils.canHandleApplicationUrl(mContext, url)) {
             if (launchApplicationUrl(url)) {
                 return true;
             }
         }
 
-        showMraidBrowserForUrl(url);
+        showMoPubBrowserForUrl(url);
         return true;
     }
 
@@ -84,9 +87,8 @@ class HtmlWebViewClient extends WebViewClient {
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         // If the URL being loaded shares the redirectUrl prefix, open it in the browser.
         if (mRedirectUrl != null && url.startsWith(mRedirectUrl)) {
-            url = urlWithClickTrackingRedirect(url);
             view.stopLoading();
-            showMraidBrowserForUrl(url);
+            showMoPubBrowserForUrl(url);
         }
     }
 
@@ -175,15 +177,6 @@ class HtmlWebViewClient extends WebViewClient {
         return url.startsWith("http://") || url.startsWith("https://");
     }
 
-    private String urlWithClickTrackingRedirect(String url) {
-        if (mClickthroughUrl == null) {
-            return url;
-        } else {
-            String encodedUrl = Uri.encode(url);
-            return mClickthroughUrl + "&r=" + encodedUrl;
-        }
-    }
-
     private boolean launchApplicationUrl(String url) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -193,20 +186,20 @@ class HtmlWebViewClient extends WebViewClient {
         return launchIntentForUserClick(mContext, intent, errorMessage);
     }
 
-    private void showMraidBrowserForUrl(String url) {
+    private void showMoPubBrowserForUrl(String url) {
         if (url == null || url.equals("")) url = "about:blank";
         Log.d("MoPub", "Final URI to show in browser: " + url);
-        Intent intent = new Intent(mContext, MraidBrowser.class);
-        intent.putExtra(MraidBrowser.URL_EXTRA, url);
+        Intent intent = new Intent(mContext, MoPubBrowser.class);
+        intent.putExtra(MoPubBrowser.DESTINATION_URL_KEY, url);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         String errorMessage = "Could not handle intent action. "
-                + ". Perhaps you forgot to declare com.mopub.mobileads.MraidBrowser"
+                + ". Perhaps you forgot to declare com.mopub.common.MoPubBrowser"
                 + " in your Android manifest file.";
 
-        boolean handledByMraidBrowser = launchIntentForUserClick(mContext, intent, errorMessage);
+        boolean handledByMoPubBrowser = launchIntentForUserClick(mContext, intent, errorMessage);
 
-        if (!handledByMraidBrowser) {
+        if (!handledByMoPubBrowser) {
             intent = new Intent(Intent.ACTION_VIEW, Uri.parse("about:blank"));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             launchIntentForUserClick(mContext, intent, null);

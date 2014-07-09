@@ -45,9 +45,17 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 
+import com.mopub.common.util.Json;
 import com.mopub.mobileads.CustomEventBanner.CustomEventBannerListener;
 import com.mopub.mobileads.factories.CustomEventBannerFactory;
-import com.mopub.mobileads.util.Json;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.mopub.mobileads.AdFetcher.AD_CONFIGURATION_KEY;
+import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_NOT_FOUND;
+import static com.mopub.mobileads.MoPubErrorCode.NETWORK_TIMEOUT;
+import static com.mopub.mobileads.MoPubErrorCode.UNSPECIFIED;
 
 public class CustomEventBannerAdapter implements CustomEventBannerListener {
     public static final int DEFAULT_BANNER_TIMEOUT_DELAY = 10000;

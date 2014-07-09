@@ -3,8 +3,10 @@ package com.mopub.mobileads;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
+
+import com.mopub.common.MoPub;
 import com.mopub.mobileads.test.support.SdkTestRunner;
-import com.mopub.mobileads.test.support.TestDateAndTime;
+import com.mopub.common.util.test.support.TestDateAndTime;
 import com.mopub.mobileads.test.support.TestHttpResponseWithHeaders;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,17 +16,17 @@ import org.robolectric.Robolectric;
 import java.util.*;
 
 import static com.mopub.mobileads.AdViewController.MINIMUM_REFRESH_TIME_MILLISECONDS;
-import static com.mopub.mobileads.util.ResponseHeader.AD_TIMEOUT;
-import static com.mopub.mobileads.util.ResponseHeader.AD_TYPE;
-import static com.mopub.mobileads.util.ResponseHeader.CLICKTHROUGH_URL;
-import static com.mopub.mobileads.util.ResponseHeader.DSP_CREATIVE_ID;
-import static com.mopub.mobileads.util.ResponseHeader.FAIL_URL;
-import static com.mopub.mobileads.util.ResponseHeader.HEIGHT;
-import static com.mopub.mobileads.util.ResponseHeader.IMPRESSION_URL;
-import static com.mopub.mobileads.util.ResponseHeader.NETWORK_TYPE;
-import static com.mopub.mobileads.util.ResponseHeader.REDIRECT_URL;
-import static com.mopub.mobileads.util.ResponseHeader.REFRESH_TIME;
-import static com.mopub.mobileads.util.ResponseHeader.WIDTH;
+import static com.mopub.common.util.ResponseHeader.AD_TIMEOUT;
+import static com.mopub.common.util.ResponseHeader.AD_TYPE;
+import static com.mopub.common.util.ResponseHeader.CLICKTHROUGH_URL;
+import static com.mopub.common.util.ResponseHeader.DSP_CREATIVE_ID;
+import static com.mopub.common.util.ResponseHeader.FAIL_URL;
+import static com.mopub.common.util.ResponseHeader.HEIGHT;
+import static com.mopub.common.util.ResponseHeader.IMPRESSION_URL;
+import static com.mopub.common.util.ResponseHeader.NETWORK_TYPE;
+import static com.mopub.common.util.ResponseHeader.REDIRECT_URL;
+import static com.mopub.common.util.ResponseHeader.REFRESH_TIME;
+import static com.mopub.common.util.ResponseHeader.WIDTH;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(SdkTestRunner.class)
