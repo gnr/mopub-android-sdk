@@ -1,25 +1,21 @@
-// This buildscript will assemble the MoPub SDK into an AAR.
+apply plugin: 'android-library'
 
-repositories {
-    mavenCentral()
+dependencies {
+    compile 'com.android.support:support-v4:+'
+    compile fileTree(dir: 'libs', include: 'amazon-ads-5.3.22.jar')
 }
 
-apply plugin: 'com.android.library'
-
-group = 'com.mopub'
-
-description = '''MoPub SDK'''
-
 android {
-    compileSdkVersion 19
-    buildToolsVersion '19.1.0'
 
+    compileSdkVersion 21
+    buildToolsVersion '21.1'
     defaultConfig {
-        versionCode 1
-        versionName "3.2.0"
-        minSdkVersion 9
-        targetSdkVersion 19
-        consumerProguardFiles 'proguard.txt'
+        minSdkVersion 10
+        targetSdkVersion 21
+    }
+
+    lintOptions {
+        abortOnError false
     }
 
     sourceSets {
@@ -27,31 +23,22 @@ android {
             manifest.srcFile 'AndroidManifest.xml'
             java.srcDirs = ['src/main/java']
             resources.srcDirs = ['src/main/java']
-            aidl.srcDirs = ['src/main']
-            renderscript.srcDirs = ['src/main']
+            aidl.srcDirs = ['src/main/java']
+            renderscript.srcDirs = ['src/main/java']
             res.srcDirs = ['res']
             assets.srcDirs = ['assets']
         }
+
+        // Move the tests to tests/java, tests/res, etc...
+        instrumentTest.setRoot('tests')
+
+        // Move the build types to build-types/<type>
+        // For instance, build-types/debug/java, build-types/debug/AndroidManifest.xml, ...
+        // This moves them out of them default location under src/<type>/... which would
+        // conflict with src/ being used by the main source set.
+        // Adding new build types or product flavors should be accompanied
+        // by a similar customization.
+        debug.setRoot('build-types/debug')
+        release.setRoot('build-types/release')
     }
-
-    buildTypes {
-        release {
-            runProguard false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), file('proguard.txt')
-        }
-    }
-
-    // Note: You will also need a local.properties file to set the location of the SDK in the same 
-    // way that the existing SDK requires, using the sdk.dir property.
-    // Alternatively, you can set an environment variable called ANDROID_HOME. There is no 
-    // difference between the two methods, you can use the one you prefer.
 }
-
-dependencies {
-    compile 'com.android.support:support-v4:19.1.+'
-}
-
-// Don't run the Robolectric Unit Tests. They don't build properly in Gradle or Android Studio in this version.
-check.dependsOn.remove("test")
-check.dependsOn.remove("testDebug")
-
