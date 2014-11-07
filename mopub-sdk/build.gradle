@@ -2,7 +2,7 @@ apply plugin: 'android-library'
 
 dependencies {
     compile 'com.android.support:support-v4:+'
-    compile fileTree(dir: 'libs', include: 'amazon-ads-5.3.22.jar')
+    compile fileTree(dir: 'libs', include: 'amazon-ads-5.4.192.jar')
 }
 
 android {
