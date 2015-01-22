@@ -1,6 +1,6 @@
 package com.mopub.mraid;
 
-import android.content.Context;
+import android.app.Activity;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -25,7 +25,7 @@ class MraidBanner extends CustomEventBanner {
     @Nullable private MraidWebViewDebugListener mDebugListener;
 
     @Override
-    protected void loadBanner(@NonNull Context context,
+    protected void loadBanner(@NonNull Activity activity,
                     @NonNull CustomEventBannerListener customEventBannerListener,
                     @NonNull Map<String, Object> localExtras,
                     @NonNull Map<String, String> serverExtras) {
@@ -46,7 +46,7 @@ class MraidBanner extends CustomEventBanner {
         }
 
         mMraidController = MraidControllerFactory.create(
-                    context, adConfiguration, PlacementType.INLINE);
+                activity, adConfiguration, PlacementType.INLINE);
 
         mMraidController.setDebugListener(mDebugListener);
         mMraidController.setMraidListener(new MraidListener() {
