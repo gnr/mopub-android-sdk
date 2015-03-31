@@ -74,8 +74,15 @@ public class MoPubView extends FrameLayout {
         // It happens when the WebView can't access the local file store to make a cache file.
         // Here, we'll work around it by trying to create a file store and then just go inert
         // if it's not accessible.
-        if (WebViewDatabase.getInstance(context) == null) {
-            MoPubLog.e("Disabling MoPub. Local cache file is inaccessible so MoPub will " +
+        try {
+            if (WebViewDatabase.getInstance(context) == null) {
+                MoPubLog.e("Disabling MoPub. Local cache file is inaccessible so MoPub will " +
+                        "fail if we try to create a WebView. Details of this Android bug found at:" +
+                        "http://code.google.com/p/android/issues/detail?id=10789");
+                return;
+            }
+        } catch(Throwable t) {
+            MoPubLog.e("Disabling MoPub. Error accessing local cache file so MoPub will " +
                     "fail if we try to create a WebView. Details of this Android bug found at:" +
                     "http://code.google.com/p/android/issues/detail?id=10789");
             return;
