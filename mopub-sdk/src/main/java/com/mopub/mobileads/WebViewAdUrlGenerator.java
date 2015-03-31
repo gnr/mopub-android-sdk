@@ -1,13 +1,10 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
-import android.location.Location;
 
 import com.mopub.common.AdUrlGenerator;
 import com.mopub.common.ClientMetadata;
 import com.mopub.common.Constants;
-import com.mopub.common.LocationService;
-import com.mopub.common.MoPub;
 import com.mopub.common.util.DateAndTime;
 
 public class WebViewAdUrlGenerator extends AdUrlGenerator {
@@ -34,10 +31,6 @@ public class WebViewAdUrlGenerator extends AdUrlGenerator {
                 clientMetadata.getDeviceModel(),
                 clientMetadata.getDeviceProduct());
 
-        setUdid(clientMetadata.getAdvertisingId());
-
-        setDoNotTrack(clientMetadata.isDoNotTrackSet());
-
         setKeywords(mKeywords);
 
         setLocation(mLocation);
@@ -63,7 +56,7 @@ public class WebViewAdUrlGenerator extends AdUrlGenerator {
 
         setExternalStoragePermission(mIsStorePictureSupported);
 
-        setTwitterAppInstalledFlag();
+        appendAdvertisingInfoTemplates();
 
         return getFinalUrlString();
     }

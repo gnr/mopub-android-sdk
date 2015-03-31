@@ -19,9 +19,9 @@ import android.webkit.WebViewClient;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.mobileads.util.WebViews;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -32,8 +32,8 @@ import static com.mopub.common.util.Drawables.REFRESH;
 import static com.mopub.common.util.Drawables.RIGHT_ARROW;
 import static com.mopub.common.util.Drawables.UNLEFT_ARROW;
 import static com.mopub.common.util.Drawables.UNRIGHT_ARROW;
-import static com.mopub.common.util.IntentUtils.deviceCanHandleIntent;
-import static com.mopub.common.util.IntentUtils.isDeepLink;
+import static com.mopub.common.util.Intents.deviceCanHandleIntent;
+import static com.mopub.common.util.Intents.isDeepLink;
 
 public class MoPubBrowser extends Activity {
     public static final String DESTINATION_URL_KEY = "URL";
@@ -88,7 +88,7 @@ public class MoPubBrowser extends Activity {
             @Override
             public void onReceivedError(WebView view, int errorCode, String description,
                     String failingUrl) {
-                Toast.makeText(MoPubBrowser.this, "MoPubBrowser error: " + description, Toast.LENGTH_SHORT).show();
+                MoPubLog.d("MoPubBrowser error: " + description);
             }
 
             @Override
@@ -183,12 +183,21 @@ public class MoPubBrowser extends Activity {
     protected void onPause() {
         super.onPause();
         CookieSyncManager.getInstance().stopSync();
+        WebViews.onPause(mWebView, isFinishing());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         CookieSyncManager.getInstance().startSync();
+        WebViews.onResume(mWebView);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mWebView.destroy();
+        mWebView = null;
     }
 
     private View getMoPubBrowserView() {
@@ -239,5 +248,11 @@ public class MoPubBrowser extends Activity {
         imageButton.setImageDrawable(drawable);
 
         return imageButton;
+    }
+
+    @Deprecated
+    @VisibleForTesting
+    void setWebView(WebView webView) {
+        mWebView = webView;
     }
 }

@@ -61,10 +61,6 @@ class NativeUrlGenerator extends AdUrlGenerator {
                 clientMetadata.getDeviceModel(),
                 clientMetadata.getDeviceProduct());
 
-        setUdid(clientMetadata.getAdvertisingId());
-
-        setDoNotTrack(clientMetadata.isDoNotTrackSet());
-
         setTimezone(DateAndTime.getTimeZoneOffsetString());
 
         setOrientation(clientMetadata.getOrientationString());
@@ -82,11 +78,11 @@ class NativeUrlGenerator extends AdUrlGenerator {
 
         setAppVersion(clientMetadata.getAppVersion());
 
-        setTwitterAppInstalledFlag();
-
         setDesiredAssets();
 
         setSequenceNumber();
+
+        appendAdvertisingInfoTemplates();
 
         return getFinalUrlString();
     }
