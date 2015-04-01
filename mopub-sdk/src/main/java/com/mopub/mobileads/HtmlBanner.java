@@ -1,6 +1,7 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
+import android.util.AndroidRuntimeException;
 
 import com.mopub.common.AdReport;
 import com.mopub.common.DataKeys;
@@ -54,7 +55,11 @@ public class HtmlBanner extends CustomEventBanner {
     @Override
     protected void onInvalidate() {
         if (mHtmlBannerWebView != null) {
-            mHtmlBannerWebView.destroy();
+            try {
+                mHtmlBannerWebView.destroy();
+            } catch(AndroidRuntimeException are) {
+                // swallow - seen in production
+            }
         }
     }
 
