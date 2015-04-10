@@ -15,8 +15,8 @@ android {
     buildToolsVersion "21.1.2"
 
     defaultConfig {
-        versionCode 21
-        versionName "3.5.0"
+        versionCode 1
+        versionName "3.6.1"
         minSdkVersion 9
         targetSdkVersion 21
         consumerProguardFiles 'proguard.txt'
@@ -46,7 +46,7 @@ dependencies {
     compile 'com.android.support:support-v4:21.0.3'
     compile 'com.android.support:support-annotations:20.0.0'
     compile fileTree(dir: 'libs', include: 'amazon-ads-5.5.102.jar')
-    compile 'com.mopub.volley:mopub-volley:1.0.0'
+    compile 'com.mopub.volley:mopub-volley:1.1.0'
 }
 
 // Don't run the Robolectric Unit Tests. They don't build properly in Gradle or Android Studio in this version.
