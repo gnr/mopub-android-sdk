@@ -200,6 +200,16 @@ public class MoPubBrowser extends Activity {
         mWebView = null;
     }
 
+    @Override
+    public void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        setVisible(false);
+        if(mWebView != null){
+            mWebView.destroy();
+            mWebView = null;
+        }
+    }
+
     private View getMoPubBrowserView() {
         LinearLayout moPubBrowserView = new LinearLayout(this);
         LinearLayout.LayoutParams browserLayoutParams = new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
