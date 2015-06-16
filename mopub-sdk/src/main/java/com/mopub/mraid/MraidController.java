@@ -10,10 +10,8 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
-import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -30,19 +28,17 @@ import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 
 import com.mopub.common.AdReport;
+import com.mopub.common.UrlHandler;
 import com.mopub.common.CloseableLayout;
 import com.mopub.common.CloseableLayout.ClosePosition;
 import com.mopub.common.CloseableLayout.OnCloseListener;
-import com.mopub.common.MoPubBrowser;
 import com.mopub.common.Preconditions;
+import com.mopub.common.UrlAction;
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.DeviceUtils;
 import com.mopub.common.util.Dips;
-import com.mopub.common.util.Intents;
 import com.mopub.common.util.Views;
-import com.mopub.exceptions.IntentNotResolvableException;
-import com.mopub.exceptions.UrlParseException;
 import com.mopub.mobileads.MraidVideoPlayerActivity;
 import com.mopub.mobileads.util.WebViews;
 import com.mopub.mraid.MraidBridge.MraidBridgeListener;
@@ -707,9 +703,9 @@ public class MraidController {
 
         if (!resizeRect.contains(closeRect)) {
             throw new MraidCommandException("resizeProperties specified a size ("
-            + widthDips + ", " + height +") and offset ("
-            + offsetXDips + ", " + offsetYDips + ") that don't allow the close region to appear "
-            + "within the resized ad.");
+                    + widthDips + ", " + height + ") and offset ("
+                    + offsetXDips + ", " + offsetYDips + ") that don't allow the close region to appear "
+                    + "within the resized ad.");
         }
 
         // Resized ads always rely on the creative's close button (as if useCustomClose were true)
@@ -1035,51 +1031,19 @@ public class MraidController {
      * corresponding application, and all other links in the MoPub in-app browser.
      */
     @VisibleForTesting
-    void handleOpen(@NonNull String url) {
-        MoPubLog.d("Opening url: " + url);
-
+    void handleOpen(@NonNull final String url) {
         if (mMraidListener != null) {
             mMraidListener.onOpen();
         }
 
-        // MoPubNativeBrowser URLs
-        if (Intents.isNativeBrowserScheme(url)) {
-            try {
-                final Intent intent = Intents.intentForNativeBrowserScheme(url);
-                Intents.startActivity(mContext, intent);
-            } catch (UrlParseException e) {
-                MoPubLog.d("Unable to load mopub native browser url: " + url + ". "
-                        + e.getMessage());
-            } catch (IntentNotResolvableException e) {
-                MoPubLog.d("Unable to load mopub native browser url: " + url + ". "
-                        + e.getMessage());
-            }
-
-            return;
-        }
-
-        // Non-http(s) URLs
-        if (!Intents.isHttpUrl(url) && Intents.canHandleApplicationUrl(mContext, url)) {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-
-            try {
-                Intents.startActivity(mContext, intent);
-            } catch (IntentNotResolvableException e) {
-                MoPubLog.d("Unable to resolve application url: " + url);
-            }
-
-            return;
-        }
-
-        final Bundle extras = new Bundle();
-        extras.putString(MoPubBrowser.DESTINATION_URL_KEY, url);
-
-        final Intent intent = Intents.getStartActivityIntent(mContext, MoPubBrowser.class, extras);
-        try {
-            Intents.startActivity(mContext, intent);
-        } catch (IntentNotResolvableException e) {
-            MoPubLog.d("Unable to launch intent for URL: " + url +  ".");
-        }
+        new UrlHandler.Builder()
+                .withSupportedUrlActions(
+                        UrlAction.IGNORE_ABOUT_SCHEME,
+                        UrlAction.OPEN_NATIVE_BROWSER,
+                        UrlAction.OPEN_IN_APP_BROWSER,
+                        UrlAction.HANDLE_SHARE_TWEET,
+                        UrlAction.FOLLOW_DEEP_LINK)
+                .build().handleUrl(mContext, url);
     }
 
     @VisibleForTesting

@@ -5,7 +5,6 @@ import com.mopub.common.test.support.SdkTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -24,7 +23,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
-@Config(manifest = Config.NONE)
 @RunWith(SdkTestRunner.class)
 public class XmlUtilsTest {
 
@@ -202,10 +200,39 @@ public class XmlUtilsTest {
     }
 
     @Test
+    public void testGetFirstMatchFromDocument() throws Exception {
+        // Get the first "aw:PurchaseOrder" nodes. If it has an "aw:OrderDate" attribute, extract a Date.
+        Date orderDate = XmlUtils.getFirstMatchFromDocument(testDoc, "aw:PurchaseOrder", "aw:OrderDate", null, new XmlUtils.NodeProcessor<Date>() {
+            DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+
+            @Override
+            public Date process(final Node node) {
+                try {
+                    return formatter.parse(node.getAttributes().getNamedItem("aw:OrderDate").getNodeValue());
+                } catch (ParseException e) {
+                    return null;
+                }
+            }
+        });
+
+        assertThat(orderDate).isNotNull();
+        assertThat(orderDate.getYear()).isEqualTo(99);
+        assertThat(orderDate.getMonth()).isEqualTo(9);
+        assertThat(orderDate.getDate()).isEqualTo(20);
+    }
+
+    @Test
     public void testGetStringDataAsList_shouldFindDeepNested() throws Exception {
         final List<String> strings = XmlUtils.getStringDataAsList(testDoc, "aw:Comment", null, null);
         assertThat(strings.size()).isEqualTo(2);
         assertThat(strings.get(0)).isEqualTo("Confirm this is electric");
         assertThat(strings.get(1)).isEqualTo("this thing breaks all the time");
+    }
+
+    @Test
+    public void testGetFirstMatchingStringData_shouldFindFirstMatch() throws Exception {
+        final String firstMatch = XmlUtils.getFirstMatchingStringData(testDoc, "aw:Comment", null, null);
+        assertThat(firstMatch).isNotNull();
+        assertThat(firstMatch).isEqualTo("Confirm this is electric");
     }
 }

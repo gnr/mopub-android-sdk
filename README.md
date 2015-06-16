@@ -4,7 +4,14 @@ Thanks for taking a look at MoPub! We take pride in having an easy-to-use, flexi
 
 Sign up for an account at [http://app.mopub.com/](http://app.mopub.com/).
 
-Help is available on the [wiki](https://github.com/mopub/mopub-android-sdk/wiki/Getting-Started).
+## Need Help?
+
+You can find integration documentation on our [wiki](https://github.com/mopub/mopub-android-sdk/wiki/Getting-Started) and
+additional help documentation on our [developer help site](http://dev.twitter.com/mopub). 
+
+To file an issue with our team visit the [MoPub Forum](https://twittercommunity.com/c/fabric/mopub). 
+
+**Note: We will be deprecating the use of GitHub issues in the near future and migrating all issues to the forum to provide a faster response time.**
 
 ## Download
 
@@ -26,22 +33,16 @@ Integration instructions are available on the [wiki](https://github.com/mopub/mo
 ## New in this Version
 
 Please view the [changelog](https://github.com/mopub/mopub-android-sdk/blob/master/CHANGELOG.md) for details.
-### 3.6.1
-- **Bug Fix** Fixed a compile error in FacebookBanner.java
 
-### 3.6.0
-- **Facebook Update** Updated supported Facebook Audience Network version to 3.23.1
-- **Bug fix** Fixed a bug where interstitials could leak memory; Fixes [issue #153](https://github.com/mopub/mopub-android-sdk/issues/153)
-- **VAST Video** Updated the VAST video player to support Progress events.
-- Updated **Volley** version to 1.1.0.
+- Updated Chartboost support to 5.3.0. This introduces a new shared class called ChartboostShared. If you are using Chartboost Custom Native Networks you will need to include this class in your build along with ChartboostInterstitial.
 
 ## Requirements
 
 - Android 2.3.1 (API Version 9) and up
-- android-support-v4.jar
-- android-support-annotations.jar (**New in 3.3.0**)
+- android-support-v4.jar, r22 (**Updated in 3.7.0**)
+- android-support-annotations.jar, r22 (**Updated in 3.7.0**)
 - MoPub Volley Library (mopub-volley-1.1.0.jar - available on JCenter) (**Updated in 3.6.0**)
-- **Recommended** Google Play Services 5.0.89 & up.
+- **Recommended** Google Play Services 7.0.0
 
 ## Upgrading from 3.2.0 and Prior
 In 3.3.0 a dependency on android-support-annotations.jar was added. If you are using Maven or Gradle to include the MoPub SDK, this dependency is included in the build scripts. For instructions on adding dependencies for Eclipse projects, see our [Getting Started Guide](https://github.com/mopub/mopub-android-sdk/wiki/Getting-Started#adding-the-support-libraries-to-your-project)

@@ -2,6 +2,7 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.TextView;
 
@@ -11,6 +12,7 @@ import com.mopub.common.test.support.SdkTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -26,7 +28,7 @@ public class VastVideoToolbarTest {
 
     @Before
     public void setUp() throws Exception {
-        context = new Activity();
+        context = Robolectric.buildActivity(Activity.class).create().get();
         subject = new VastVideoToolbar(context);
 
         onTouchListener = mock(View.OnTouchListener.class);
@@ -119,8 +121,8 @@ public class VastVideoToolbarTest {
 
     @Test
     public void updateCountdownWidget_shouldUpdateTextDrawablesDisplayNumber() throws Exception {
-        final TextDrawable countdownImageSpy = spy(subject.getCountdownWidget().getImageViewDrawable());
-        subject.getCountdownWidget().setImageViewDrawable(countdownImageSpy);
+        final TextDrawable countdownImageSpy = spy((TextDrawable) subject.getCountdownWidget().getImageViewDrawable());
+        subject.getCountdownWidget().setImageViewDrawable((Drawable) countdownImageSpy);
 
         subject.updateCountdownWidget(1002);
 
