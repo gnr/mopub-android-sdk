@@ -6,11 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.mobileads.util.vast.VastVideoConfiguration;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static com.mopub.common.DataKeys.BROADCAST_IDENTIFIER_KEY;
-import static com.mopub.mobileads.VastVideoViewController.VAST_VIDEO_CONFIGURATION;
+import static com.mopub.mobileads.VastVideoViewController.VAST_VIDEO_CONFIG;
 
 public class BaseVideoPlayerActivity extends Activity {
     static final String VIDEO_CLASS_EXTRAS_KEY = "video_view_class_name";
@@ -35,9 +34,9 @@ public class BaseVideoPlayerActivity extends Activity {
     }
 
     static void startVast(final Context context,
-            final VastVideoConfiguration vastVideoConfiguration,
+            final VastVideoConfig vastVideoConfig,
             final long broadcastIdentifier) {
-        final Intent intentVideoPlayerActivity = createIntentVast(context, vastVideoConfiguration, broadcastIdentifier);
+        final Intent intentVideoPlayerActivity = createIntentVast(context, vastVideoConfig, broadcastIdentifier);
         try {
             context.startActivity(intentVideoPlayerActivity);
         } catch (ActivityNotFoundException e) {
@@ -46,12 +45,12 @@ public class BaseVideoPlayerActivity extends Activity {
     }
 
     static Intent createIntentVast(final Context context,
-            final VastVideoConfiguration vastVideoConfiguration,
+            final VastVideoConfig vastVideoConfig,
             final long broadcastIdentifier) {
         final Intent intentVideoPlayerActivity = new Intent(context, MraidVideoPlayerActivity.class);
         intentVideoPlayerActivity.setFlags(FLAG_ACTIVITY_NEW_TASK);
         intentVideoPlayerActivity.putExtra(VIDEO_CLASS_EXTRAS_KEY, "vast");
-        intentVideoPlayerActivity.putExtra(VAST_VIDEO_CONFIGURATION, vastVideoConfiguration);
+        intentVideoPlayerActivity.putExtra(VAST_VIDEO_CONFIG, vastVideoConfig);
         intentVideoPlayerActivity.putExtra(BROADCAST_IDENTIFIER_KEY, broadcastIdentifier);
         return intentVideoPlayerActivity;
     }

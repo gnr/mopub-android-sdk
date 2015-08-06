@@ -5,16 +5,16 @@ repositories {
 apply plugin: 'com.android.application'
 
 group = 'com.mopub'
-
-description = '''MoPub SDK'''
+description = '''MoPub Sample App'''
+version = '3.10.0'
 
 android {
     compileSdkVersion 22
     buildToolsVersion '22.0.1'
 
     defaultConfig {
-        versionCode 25
-        versionName "3.8.0"
+        versionCode 27
+        versionName version
         minSdkVersion 9
         targetSdkVersion 22
     }
@@ -22,19 +22,19 @@ android {
     buildTypes {
       release {
         minifyEnabled true
-        proguardFiles = [getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg']
+        proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
       }
       debug {
-        minifyEnabled true
-        proguardFiles = [getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg']
+        minifyEnabled false
+        proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
       }
     }
 
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src/main']
-            resources.srcDirs = ['src/main']
+            java.srcDirs = ['src/main/java']
+            resources.srcDirs = ['src/main/java']
             aidl.srcDirs = ['src/main']
             renderscript.srcDirs = ['src/main']
             res.srcDirs = ['res']
@@ -53,5 +53,6 @@ android {
 dependencies {
     compile 'com.android.support:support-v4:22.0.0'
     compile 'com.google.android.gms:play-services-ads:7.0.0'
+    compile 'com.android.support:recyclerview-v7:22.0.0'
     compile project(':mopub-sdk')
 }
