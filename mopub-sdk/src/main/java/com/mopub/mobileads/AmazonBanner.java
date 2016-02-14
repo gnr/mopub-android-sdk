@@ -70,8 +70,12 @@ public class AmazonBanner extends CustomEventBanner implements AdListener {
     @Override
 	public void onInvalidate() {
         Log.d("AmazonBanner", "onInvalidate()");
-//        mAmazonAd.destroy();
-//        mAmazonAd = null;
+        if(mAmazonAd != null) {
+            mAmazonAd.setListener(null);
+            mAmazonAd.destroy();
+            mAmazonAd = null;
+        }
+        mBannerListener = null;
     }
 
     /*
@@ -95,13 +99,17 @@ public class AmazonBanner extends CustomEventBanner implements AdListener {
 		}
 		
 		Log.d("AmazonBanner", "onAdFailedToLoad()");
-		mBannerListener.onBannerFailed(moPubCode);
+        if(mBannerListener != null) {
+            mBannerListener.onBannerFailed(moPubCode);
+        }
 	}
 
 	@Override
 	public void onAdLoaded(Ad view, AdProperties adProperties) {
         Log.d("AmazonBanner", "onAdLoaded()");
-		mBannerListener.onBannerLoaded(mAmazonAd);
+        if(mBannerListener != null) {
+            mBannerListener.onBannerLoaded(mAmazonAd);
+        }
 	}
 
 	@Override
