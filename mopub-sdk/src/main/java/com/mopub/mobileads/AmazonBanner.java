@@ -38,7 +38,7 @@ public class AmazonBanner extends CustomEventBanner implements AdListener {
         float screenWidth = activity.getApplicationContext().getResources().getDisplayMetrics().widthPixels;
         screenWidth = screenWidth / scale;
 
-        AdSize adSize = AdSize.SIZE_300x50;
+        AdSize adSize = AdSize.SIZE_320x50;
         int adWidth = 320;
         int adHeight = 50;
 
