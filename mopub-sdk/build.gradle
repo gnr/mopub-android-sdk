@@ -13,7 +13,7 @@ description = '''MoPub SDK'''
 android {
     useLibrary 'org.apache.http.legacy'
 
-    compileSdkVersion 23
+    compileSdkVersion 24
     buildToolsVersion "23.0.3"
 
     defaultConfig {
