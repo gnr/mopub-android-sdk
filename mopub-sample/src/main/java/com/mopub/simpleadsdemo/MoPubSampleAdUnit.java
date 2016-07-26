@@ -18,6 +18,8 @@ class MoPubSampleAdUnit implements Comparable<MoPubSampleAdUnit> {
     enum AdType {
         BANNER("Banner", BannerDetailFragment.class),
         MRECT("Mrect", MrectDetailFragment.class),
+        LEADERBOARD("Leaderboard", LeaderboardDetailFragment.class),
+        SKYSCRAPER("Skyscraper", SkyscraperDetailFragment.class),
         INTERSTITIAL("Interstitial", InterstitialDetailFragment.class),
         REWARDED_VIDEO("Rewarded Video", RewardedVideoDetailFragment.class),
         LIST_VIEW("Native List View", NativeListViewFragment.class),
@@ -31,7 +33,7 @@ class MoPubSampleAdUnit implements Comparable<MoPubSampleAdUnit> {
         private final String name;
         private final Class<? extends Fragment> fragmentClass;
 
-        private AdType(final String name, final Class<? extends Fragment> fragmentClass) {
+        AdType(final String name, final Class<? extends Fragment> fragmentClass) {
             this.name = name;
             this.fragmentClass = fragmentClass;
         }

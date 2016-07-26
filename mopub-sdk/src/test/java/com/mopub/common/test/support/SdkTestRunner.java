@@ -3,12 +3,14 @@ package com.mopub.common.test.support;
 import com.mopub.common.CacheService;
 import com.mopub.common.ClientMetadata;
 import com.mopub.common.MoPub;
+import com.mopub.common.MoPubHttpUrlConnection;
 import com.mopub.common.event.EventDispatcher;
 import com.mopub.common.event.MoPubEvents;
 import com.mopub.common.factories.MethodBuilderFactory;
 import com.mopub.common.util.AsyncTasks;
 import com.mopub.common.util.DateAndTime;
 import com.mopub.common.util.test.support.ShadowAsyncTasks;
+import com.mopub.common.util.test.support.ShadowMoPubHttpUrlConnection;
 import com.mopub.common.util.test.support.TestDateAndTime;
 import com.mopub.common.util.test.support.TestMethodBuilderFactory;
 import com.mopub.mobileads.factories.AdViewControllerFactory;
@@ -18,11 +20,9 @@ import com.mopub.mobileads.factories.CustomEventInterstitialAdapterFactory;
 import com.mopub.mobileads.factories.CustomEventInterstitialFactory;
 import com.mopub.mobileads.factories.HtmlBannerWebViewFactory;
 import com.mopub.mobileads.factories.HtmlInterstitialWebViewFactory;
-import com.mopub.mobileads.factories.HttpClientFactory;
 import com.mopub.mobileads.factories.MoPubViewFactory;
 import com.mopub.mobileads.factories.MraidControllerFactory;
 import com.mopub.mobileads.factories.VastManagerFactory;
-import com.mopub.mobileads.factories.VastVideoDownloadTaskFactory;
 import com.mopub.mobileads.test.support.TestAdViewControllerFactory;
 import com.mopub.mobileads.test.support.TestCustomEventBannerAdapterFactory;
 import com.mopub.mobileads.test.support.TestCustomEventBannerFactory;
@@ -30,42 +30,37 @@ import com.mopub.mobileads.test.support.TestCustomEventInterstitialAdapterFactor
 import com.mopub.mobileads.test.support.TestCustomEventInterstitialFactory;
 import com.mopub.mobileads.test.support.TestHtmlBannerWebViewFactory;
 import com.mopub.mobileads.test.support.TestHtmlInterstitialWebViewFactory;
-import com.mopub.mobileads.test.support.TestHttpClientFactory;
 import com.mopub.mobileads.test.support.TestMoPubViewFactory;
 import com.mopub.mobileads.test.support.TestMraidControllerFactory;
 import com.mopub.mobileads.test.support.TestVastManagerFactory;
-import com.mopub.mobileads.test.support.TestVastVideoDownloadTaskFactory;
 import com.mopub.nativeads.factories.CustomEventNativeFactory;
 import com.mopub.nativeads.test.support.TestCustomEventNativeFactory;
 
 import org.junit.runners.model.InitializationError;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.DefaultTestLifecycle;
-import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.TestLifecycle;
-import org.robolectric.bytecode.ClassInfo;
-import org.robolectric.bytecode.Setup;
-import org.robolectric.util.RobolectricBackgroundExecutorService;
+import org.robolectric.internal.bytecode.InstrumentationConfiguration;
+import org.robolectric.util.concurrent.RoboExecutorService;
 
 import static com.mopub.common.MoPub.LocationAwareness;
 import static org.mockito.Mockito.mock;
 
-public class SdkTestRunner extends RobolectricTestRunner {
+public class SdkTestRunner extends RobolectricGradleTestRunner {
 
     public SdkTestRunner(Class<?> testClass) throws InitializationError {
         super(testClass);
     }
 
     @Override
-    public Setup createSetup() {
-        return new Setup() {
-            @Override
-            public boolean shouldInstrument(ClassInfo classInfo) {
-                return classInfo.getName().equals(AsyncTasks.class.getName())
-                        || super.shouldInstrument(classInfo);
-            }
-        };
+    public InstrumentationConfiguration createClassLoaderConfig() {
+        InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
+        builder.addInstrumentedClass(AsyncTasks.class.getName());
+        builder.addInstrumentedClass(MoPubHttpUrlConnection.class.getName());
+        // To mitigate: https://github.com/robolectric/robolectric/issues/2129
+        builder.addInstrumentedPackage("org.xyz.testMp");
+        return builder.build();
     }
 
     @Override
@@ -78,7 +73,6 @@ public class SdkTestRunner extends RobolectricTestRunner {
         public void prepareTest(Object test) {
             ClientMetadata.clearForTesting();
 
-            HttpClientFactory.setInstance(new TestHttpClientFactory());
             DateAndTime.setInstance(new TestDateAndTime());
             CustomEventBannerFactory.setInstance(new TestCustomEventBannerFactory());
             CustomEventInterstitialFactory.setInstance(new TestCustomEventInterstitialFactory());
@@ -89,21 +83,20 @@ public class SdkTestRunner extends RobolectricTestRunner {
             HtmlInterstitialWebViewFactory.setInstance(new TestHtmlInterstitialWebViewFactory());
             AdViewControllerFactory.setInstance(new TestAdViewControllerFactory());
             VastManagerFactory.setInstance(new TestVastManagerFactory());
-            VastVideoDownloadTaskFactory.setInstance(new TestVastVideoDownloadTaskFactory());
             MethodBuilderFactory.setInstance(new TestMethodBuilderFactory());
             CustomEventNativeFactory.setInstance(new TestCustomEventNativeFactory());
             MraidControllerFactory.setInstance(new TestMraidControllerFactory());
 
             ShadowAsyncTasks.reset();
+            ShadowMoPubHttpUrlConnection.reset();
             MoPubEvents.setEventDispatcher(mock(EventDispatcher.class));
             MoPub.setLocationAwareness(LocationAwareness.NORMAL);
             MoPub.setLocationPrecision(6);
 
             MockitoAnnotations.initMocks(test);
 
-            AsyncTasks.setExecutor(new RobolectricBackgroundExecutorService());
+            AsyncTasks.setExecutor(new RoboExecutorService());
             CacheService.clearAndNullCaches();
-            Robolectric.getFakeHttpLayer().clearPendingHttpResponses();
         }
     }
 }

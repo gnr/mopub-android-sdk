@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.widget.ImageButton;
 
 import com.mopub.common.test.support.SdkTestRunner;
+import com.mopub.mobileads.BuildConfig;
 import com.mopub.mobileads.EventForwardingBroadcastReceiver;
 
 import org.apache.http.HttpRequest;
@@ -14,23 +15,25 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.shadows.ShadowLocalBroadcastManager;
+import org.robolectric.Shadows;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowVideoView;
-import org.robolectric.tester.org.apache.http.RequestMatcher;
-import org.robolectric.tester.org.apache.http.TestHttpResponse;
+import org.robolectric.shadows.httpclient.FakeHttp;
+import org.robolectric.shadows.httpclient.RequestMatcher;
+import org.robolectric.shadows.httpclient.TestHttpResponse;
+import org.robolectric.shadows.support.v4.ShadowLocalBroadcastManager;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static com.mopub.mobileads.BaseVideoPlayerActivity.VIDEO_URL;
 import static com.mopub.mobileads.BaseVideoViewController.BaseVideoViewControllerListener;
-import static com.mopub.mobileads.EventForwardingBroadcastReceiver.getHtmlInterstitialIntentFilter;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(SdkTestRunner.class)
+@Config(constants = BuildConfig.class)
 public class MraidVideoViewControllerTest {
     private Context context;
     private Bundle bundle;
@@ -44,26 +47,27 @@ public class MraidVideoViewControllerTest {
         bundle = new Bundle();
         baseVideoViewControllerListener = mock(BaseVideoViewControllerListener.class);
 
-        bundle.putString(VIDEO_URL, "http://video_url");
+        bundle.putString(VIDEO_URL, "https://video_url");
 
-        Robolectric.getUiThreadScheduler().pause();
-        Robolectric.getBackgroundScheduler().pause();
+        Robolectric.getForegroundThreadScheduler().pause();
+        Robolectric.getBackgroundThreadScheduler().pause();
 
-        Robolectric.addHttpResponseRule(new RequestMatcher() {
+        FakeHttp.addHttpResponseRule(new RequestMatcher() {
             @Override
             public boolean matches(HttpRequest request) {
                 return true;
             }
         }, new TestHttpResponse(200, "body"));
 
-        ShadowLocalBroadcastManager.getInstance(context).registerReceiver(broadcastReceiver, getHtmlInterstitialIntentFilter());
+        ShadowLocalBroadcastManager.getInstance(context).registerReceiver(broadcastReceiver,
+                new EventForwardingBroadcastReceiver(null, 0).getIntentFilter());
     }
 
     @After
     public void tearDown() throws Exception {
-        Robolectric.getUiThreadScheduler().reset();
-        Robolectric.getBackgroundScheduler().reset();
-        Robolectric.clearPendingHttpResponses();
+        Robolectric.getForegroundThreadScheduler().reset();
+        Robolectric.getBackgroundThreadScheduler().reset();
+        FakeHttp.clearPendingHttpResponses();
 
         ShadowLocalBroadcastManager.getInstance(context).unregisterReceiver(broadcastReceiver);
     }
@@ -71,12 +75,12 @@ public class MraidVideoViewControllerTest {
     @Test
     public void constructor_shouldSetListenersAndVideoPath() throws Exception {
         initializeSubject();
-        ShadowVideoView shadowSubject = shadowOf(subject.getVideoView());
+        ShadowVideoView shadowSubject = Shadows.shadowOf(subject.getVideoView());
 
         assertThat(shadowSubject.getOnCompletionListener()).isNotNull();
         assertThat(shadowSubject.getOnErrorListener()).isNotNull();
 
-        assertThat(shadowSubject.getVideoPath()).isEqualTo("http://video_url");
+        assertThat(shadowSubject.getVideoPath()).isEqualTo("https://video_url");
         assertThat(subject.getVideoView().hasFocus()).isTrue();
     }
     
@@ -88,7 +92,7 @@ public class MraidVideoViewControllerTest {
         ImageButton closeButton = getCloseButton();
 
         assertThat(closeButton).isNotNull();
-        assertThat(shadowOf(closeButton).getOnClickListener()).isNotNull();
+        assertThat(Shadows.shadowOf(closeButton).getOnClickListener()).isNotNull();
         assertThat(closeButton.getVisibility()).isEqualTo(GONE);
     }
 
@@ -157,7 +161,7 @@ public class MraidVideoViewControllerTest {
     }
 
     private ShadowVideoView getShadowVideoView() {
-        return shadowOf(subject.getVideoView());
+        return Shadows.shadowOf(subject.getVideoView());
     }
 
     ImageButton getCloseButton() {

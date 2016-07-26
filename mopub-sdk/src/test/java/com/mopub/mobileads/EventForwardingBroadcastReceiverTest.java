@@ -14,7 +14,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.shadows.ShadowLocalBroadcastManager;
+import org.robolectric.annotation.Config;
+import org.robolectric.shadows.support.v4.ShadowLocalBroadcastManager;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,7 +27,6 @@ import static com.mopub.mobileads.EventForwardingBroadcastReceiver.ACTION_INTERS
 import static com.mopub.mobileads.EventForwardingBroadcastReceiver.ACTION_INTERSTITIAL_DISMISS;
 import static com.mopub.mobileads.EventForwardingBroadcastReceiver.ACTION_INTERSTITIAL_FAIL;
 import static com.mopub.mobileads.EventForwardingBroadcastReceiver.ACTION_INTERSTITIAL_SHOW;
-import static com.mopub.mobileads.EventForwardingBroadcastReceiver.getHtmlInterstitialIntentFilter;
 import static com.mopub.mobileads.MoPubInterstitial.InterstitialAdListener;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -36,6 +36,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @RunWith(SdkTestRunner.class)
+@Config(constants = BuildConfig.class)
 public class EventForwardingBroadcastReceiverTest {
 
     private CustomEventInterstitialListener customEventInterstitialListener;
@@ -97,7 +98,7 @@ public class EventForwardingBroadcastReceiverTest {
                 ACTION_INTERSTITIAL_CLICK
         );
 
-        final IntentFilter intentFilter = EventForwardingBroadcastReceiver.getHtmlInterstitialIntentFilter();
+        final IntentFilter intentFilter = subject.getIntentFilter();
         final Iterator<String> actionIterator = intentFilter.actionsIterator();
 
         assertThat(intentFilter.countActions()).isEqualTo(4);
@@ -172,7 +173,7 @@ public class EventForwardingBroadcastReceiverTest {
 
     @Test
     public void register_shouldEnableReceivingBroadcasts() throws Exception {
-        subject.register(context);
+        subject.register(subject, context);
         Intent intent = getIntentForActionAndIdentifier(ACTION_INTERSTITIAL_SHOW, broadcastIdentifier);
         ShadowLocalBroadcastManager.getInstance(context).sendBroadcast(intent);
 
@@ -181,9 +182,9 @@ public class EventForwardingBroadcastReceiverTest {
 
     @Test
     public void unregister_shouldDisableReceivingBroadcasts() throws Exception {
-        subject.register(context);
+        subject.register(subject, context);
 
-        subject.unregister();
+        subject.unregister(subject);
         Intent intent = getIntentForActionAndIdentifier(ACTION_INTERSTITIAL_SHOW, broadcastIdentifier);
         ShadowLocalBroadcastManager.getInstance(context).sendBroadcast(intent);
 
@@ -192,18 +193,18 @@ public class EventForwardingBroadcastReceiverTest {
 
     @Test
     public void unregister_whenNotRegistered_shouldNotBlowUp() throws Exception {
-        subject.unregister();
+        subject.unregister(subject);
 
         // pass
     }
 
     @Test
     public void unregister_shouldNotLeakTheContext() throws Exception {
-        subject.register(context);
-        subject.unregister();
+        subject.register(subject, context);
+        subject.unregister(subject);
 
-        LocalBroadcastManager.getInstance(context).registerReceiver(subject, getHtmlInterstitialIntentFilter());
-        subject.unregister();
+        LocalBroadcastManager.getInstance(context).registerReceiver(subject, subject.getIntentFilter());
+        subject.unregister(subject);
 
         // Unregister shouldn't know the context any more and so should not have worked
         Intent intent = getIntentForActionAndIdentifier(ACTION_INTERSTITIAL_SHOW, broadcastIdentifier);

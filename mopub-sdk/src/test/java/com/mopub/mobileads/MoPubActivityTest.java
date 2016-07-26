@@ -21,7 +21,11 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.robolectric.Robolectric;
-import org.robolectric.shadows.ShadowLocalBroadcastManager;
+import org.robolectric.annotation.Config;
+import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadows.ShadowActivity;
+import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.shadows.support.v4.ShadowLocalBroadcastManager;
 import org.robolectric.util.ActivityController;
 
 import static com.mopub.common.DataKeys.CLICKTHROUGH_URL_KEY;
@@ -34,7 +38,6 @@ import static com.mopub.mobileads.EventForwardingBroadcastReceiver.ACTION_INTERS
 import static com.mopub.mobileads.EventForwardingBroadcastReceiver.ACTION_INTERSTITIAL_DISMISS;
 import static com.mopub.mobileads.EventForwardingBroadcastReceiver.ACTION_INTERSTITIAL_FAIL;
 import static com.mopub.mobileads.EventForwardingBroadcastReceiver.ACTION_INTERSTITIAL_SHOW;
-import static com.mopub.mobileads.EventForwardingBroadcastReceiver.getHtmlInterstitialIntentFilter;
 import static com.mopub.mobileads.EventForwardingBroadcastReceiverTest.getIntentForActionAndIdentifier;
 import static com.mopub.mobileads.MoPubErrorCode.UNSPECIFIED;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -45,15 +48,15 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(SdkTestRunner.class)
+@Config(constants = BuildConfig.class)
 public class MoPubActivityTest {
     private static final String EXPECTED_HTML_DATA = "htmlData";
     private static final boolean EXPECTED_IS_SCROLLABLE = true;
     @Mock private AdReport mockAdReport;
     private static final String EXPECTED_REDIRECT_URL = "redirectUrl";
-    private static final String EXPECTED_CLICKTHROUGH_URL = "http://expected_url";
+    private static final String EXPECTED_CLICKTHROUGH_URL = "https://expected_url";
     private static final CreativeOrientation EXPECTED_ORIENTATION = CreativeOrientation.PORTRAIT;
 
     @Mock private BroadcastReceiver broadcastReceiver;
@@ -77,7 +80,9 @@ public class MoPubActivityTest {
 
         final ActivityController<MoPubActivity> subjectController = Robolectric.buildActivity(MoPubActivity.class).withIntent(moPubActivityIntent);
         subject = subjectController.get();
-        ShadowLocalBroadcastManager.getInstance(subject).registerReceiver(broadcastReceiver, getHtmlInterstitialIntentFilter());
+        ShadowLocalBroadcastManager.getInstance(subject).registerReceiver(broadcastReceiver,
+                new EventForwardingBroadcastReceiver(customEventInterstitialListener,
+                        testBroadcastIdentifier).getIntentFilter());
         subjectController.create();
 
         customEventInterstitialListener = mock(CustomEventInterstitialListener.class);
@@ -97,6 +102,14 @@ public class MoPubActivityTest {
 
         verify(htmlInterstitialWebView).enablePlugins(eq(false));
         verify(htmlInterstitialWebView).loadHtmlResponse(htmlData);
+    }
+
+    @Test
+    public void preRenderHtml_shouldEnableJavascriptCachingForDummyWebView() {
+        MoPubActivity.preRenderHtml(subject, mockAdReport, customEventInterstitialListener,
+                "html_data");
+
+        verify(htmlInterstitialWebView).enableJavascriptCaching();
     }
 
     @Test
@@ -181,7 +194,7 @@ public class MoPubActivityTest {
     public void start_shouldStartMoPubActivityWithCorrectParameters() throws Exception {
         MoPubActivity.start(subject, "expectedResponse", mockAdReport, true, "redirectUrl", "clickthroughUrl", CreativeOrientation.PORTRAIT, testBroadcastIdentifier);
 
-        Intent nextStartedActivity = Robolectric.getShadowApplication().getNextStartedActivity();
+        Intent nextStartedActivity = ShadowApplication.getInstance().getNextStartedActivity();
         assertThat(nextStartedActivity.getStringExtra(HTML_RESPONSE_BODY_KEY)).isEqualTo("expectedResponse");
         assertThat(nextStartedActivity.getBooleanExtra(SCROLLABLE_KEY, false)).isTrue();
         assertThat(nextStartedActivity.getStringExtra(REDIRECT_URL_KEY)).isEqualTo("redirectUrl");
@@ -208,7 +221,9 @@ public class MoPubActivityTest {
     public void getAdView_shouldSetUpForBroadcastingClicks() throws Exception {
         subject.getAdView();
         BroadcastReceiver broadcastReceiver = mock(BroadcastReceiver.class);
-        ShadowLocalBroadcastManager.getInstance(subject).registerReceiver(broadcastReceiver, getHtmlInterstitialIntentFilter());
+        ShadowLocalBroadcastManager.getInstance(subject).registerReceiver(broadcastReceiver,
+                new EventForwardingBroadcastReceiver(customEventInterstitialListener,
+                        testBroadcastIdentifier).getIntentFilter());
 
         TestHtmlInterstitialWebViewFactory.getLatestListener().onInterstitialClicked();
 
@@ -222,7 +237,9 @@ public class MoPubActivityTest {
     public void getAdView_shouldSetUpForBroadcastingFail() throws Exception {
         subject.getAdView();
         BroadcastReceiver broadcastReceiver = mock(BroadcastReceiver.class);
-        ShadowLocalBroadcastManager.getInstance(subject).registerReceiver(broadcastReceiver, getHtmlInterstitialIntentFilter());
+        ShadowLocalBroadcastManager.getInstance(subject).registerReceiver(broadcastReceiver,
+                new EventForwardingBroadcastReceiver(customEventInterstitialListener,
+                        testBroadcastIdentifier).getIntentFilter());
 
         TestHtmlInterstitialWebViewFactory.getLatestListener().onInterstitialFailed(UNSPECIFIED);
 
@@ -231,7 +248,7 @@ public class MoPubActivityTest {
         Intent intent = intentCaptor.getValue();
         assertThat(intent.getAction()).isEqualTo(ACTION_INTERSTITIAL_FAIL);
 
-        assertThat(shadowOf(subject).isFinishing()).isTrue();
+        assertThat(subject.isFinishing()).isTrue();
     }
 
     @Test
@@ -251,7 +268,7 @@ public class MoPubActivityTest {
         broadcastingInterstitialListener.onInterstitialFailed(null);
 
         verify(broadcastReceiver).onReceive(any(Context.class), eq(expectedIntent));
-        assertThat(shadowOf(subject).isFinishing()).isTrue();
+        assertThat(((ShadowActivity) ShadowExtractor.extract(subject)).isFinishing()).isTrue();
     }
 
     @Test

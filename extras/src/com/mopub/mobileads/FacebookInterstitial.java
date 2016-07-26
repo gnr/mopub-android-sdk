@@ -11,7 +11,7 @@ import com.facebook.ads.InterstitialAdListener;
 import java.util.Map;
 
 /**
- * Tested with Facebook SDK 3.23.1.
+ * Tested with Facebook SDK 4.8.1.
  */
 public class FacebookInterstitial extends CustomEventInterstitial implements InterstitialAdListener {
     public static final String PLACEMENT_ID_KEY = "placement_id";
@@ -49,6 +49,11 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
             mFacebookInterstitial.show();
         } else {
             Log.d("MoPub", "Tried to show a Facebook interstitial ad before it finished loading. Please try again.");
+            if (mInterstitialListener != null) {
+                onError(mFacebookInterstitial, AdError.INTERNAL_ERROR);
+            } else {
+                Log.d("MoPub", "Interstitial listener not instantiated. Please load interstitial again.");
+            }
         }
     }
 
