@@ -3,6 +3,13 @@ repositories {
     flatDir {
         dirs '../libs'
     }
+    maven { url 'https://maven.google.com' }
+}
+
+buildscript {
+    repositories {
+        maven { url 'https://maven.google.com' }
+    }
 }
 
 apply plugin: 'com.android.application'
@@ -13,14 +20,14 @@ version = '4.7.1'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion '26.0.0'
+    buildToolsVersion '26.0.2'
     lintOptions { abortOnError false }
 
     defaultConfig {
         versionCode 42
         versionName version
-        minSdkVersion 14
-        targetSdkVersion 26
+        minSdkVersion 15
+        targetSdkVersion 25
     }
 
     buildTypes {
@@ -55,8 +62,8 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:26.0.0'
+    compile 'com.android.support:support-v4:27.0.0'
     compile 'com.google.android.gms:play-services-ads:7.8.0'
-    compile 'com.android.support:recyclerview-v7:26.0.0'
+    compile 'com.android.support:recyclerview-v7:27.0.0'
     compile project(':mopub-sdk')
 }
