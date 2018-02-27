@@ -104,9 +104,9 @@ android {
 
 
 dependencies {
-    compile 'com.android.support:support-v4:27.0.0'
+    compile 'com.android.support:support-v4:27.0.2'
     compile 'com.android.support:support-annotations:27.0.2'
-    compile 'com.android.support:recyclerview-v7:27.0.0'
+    compile 'com.android.support:recyclerview-v7:27.0.2'
     compile fileTree(dir: 'libs', include: 'amazon-ads-5.8.1.1.jar')
     compile 'com.mopub.volley:mopub-volley:1.1.0'
     compile 'com.google.android.exoplayer:exoplayer:r1.5.6'
