@@ -19,7 +19,7 @@ description = '''MoPub Sample App'''
 version = '4.7.1'
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 27
     buildToolsVersion '26.0.2'
     lintOptions { abortOnError false }
 
@@ -27,7 +27,7 @@ android {
         versionCode 42
         versionName version
         minSdkVersion 15
-        targetSdkVersion 25
+        targetSdkVersion 27
     }
 
     buildTypes {
