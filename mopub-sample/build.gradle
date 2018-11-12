@@ -20,7 +20,7 @@ version = '4.7.1'
 
 android {
     compileSdkVersion 28
-    buildToolsVersion '27.0.3'
+    buildToolsVersion '28.0.3'
     lintOptions { abortOnError false }
 
     defaultConfig {
