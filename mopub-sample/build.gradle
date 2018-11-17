@@ -19,7 +19,7 @@ description = '''MoPub Sample App'''
 version = '4.7.1'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 27
     buildToolsVersion '28.0.3'
     lintOptions { abortOnError false }
 
@@ -27,7 +27,7 @@ android {
         versionCode 42
         versionName version
         minSdkVersion 15
-        targetSdkVersion 28
+        targetSdkVersion 27
     }
 
     buildTypes {
@@ -62,8 +62,8 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:28.0.0'
+    compile 'com.android.support:support-v4:27.1.1'
     compile 'com.google.android.gms:play-services-ads:11.8.0'
-    compile 'com.android.support:recyclerview-v7:28.0.0'
+    compile 'com.android.support:recyclerview-v7:27.1.1'
     compile project(':mopub-sdk')
 }
