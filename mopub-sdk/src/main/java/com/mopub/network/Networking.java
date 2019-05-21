@@ -37,7 +37,7 @@ public class Networking {
     private volatile static MoPubRequestQueue sRequestQueue;
     private volatile static String sUserAgent;
     private volatile static MaxWidthImageLoader sMaxWidthImageLoader;
-    private static boolean sUseHttps = false;
+    private static boolean sUseHttps = true;
 
     @Nullable
     public static MoPubRequestQueue getRequestQueue() {
