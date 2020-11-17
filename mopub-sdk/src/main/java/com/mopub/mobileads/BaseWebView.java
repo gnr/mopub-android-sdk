@@ -6,7 +6,7 @@ import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.view.Gravity;
 import android.view.WindowManager;
 import android.webkit.WebSettings;

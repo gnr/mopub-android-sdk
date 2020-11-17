@@ -1,6 +1,6 @@
 package com.mopub.network;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.event.BaseEvent;

@@ -1,6 +1,6 @@
 package com.mopub.mobileads;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public class VideoViewabilityTracker extends VastTracker {
     private final int mViewablePlaytimeMS;

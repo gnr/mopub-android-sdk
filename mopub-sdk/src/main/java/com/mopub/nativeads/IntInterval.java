@@ -1,6 +1,6 @@
 package com.mopub.nativeads;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 /**
  * Stores an integer interval in the form of a start and a length.

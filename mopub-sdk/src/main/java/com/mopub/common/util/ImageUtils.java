@@ -2,7 +2,7 @@ package com.mopub.common.util;
 
 import android.graphics.Bitmap;
 import android.os.Build;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.widget.ImageView;
 
 

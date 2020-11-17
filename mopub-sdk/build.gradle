@@ -9,7 +9,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.3'
+        classpath 'com.android.tools.build:gradle:4.1.1'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
     }
 }
@@ -43,8 +43,8 @@ description = '''MoPub Android SDK'''
 version = '4.7.1'
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.2"
+    compileSdkVersion 30
+    buildToolsVersion "29.0.3"
     lintOptions { abortOnError false }
     useLibrary 'org.apache.http.legacy'
 
@@ -52,7 +52,7 @@ android {
         versionCode 42
         versionName version
         minSdkVersion 16
-        targetSdkVersion 29
+        targetSdkVersion 30
         consumerProguardFiles 'proguard.txt'
     }
 
@@ -105,26 +105,15 @@ android {
 
 
 dependencies {
-    implementation 'com.android.support:support-v4:28.0.0'
-    implementation 'com.android.support:support-annotations:28.0.0'
-    implementation 'com.android.support:recyclerview-v7:28.0.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.annotation:annotation:1.1.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
     api fileTree(dir: 'libs', include: 'amazon-ads-5.9.0.jar')
     implementation 'com.mopub.volley:mopub-volley:1.1.0'
-    implementation 'com.google.android.exoplayer:exoplayer:r1.5.6'
+    implementation 'com.google.android.exoplayer:exoplayer-core:2.11.5'
+    implementation 'com.google.android.exoplayer:exoplayer-hls:2.11.5'
+    implementation 'com.google.android.exoplayer:exoplayer-ui:2.11.5'
     // anchor: additional dependencies
-
-    javadocDeps 'com.google.android.exoplayer:exoplayer:r1.5.6:sources'
-    javadocDeps 'com.mopub.volley:mopub-volley:1.1.0:sources'
-    javadocDeps 'com.android.support:support-v4:28.0.0:sources'
-    javadocDeps 'com.android.support:support-annotations:28.0.0:sources'
-    javadocDeps 'com.android.support:recyclerview-v7:28.0.0:sources'
-
-    testImplementation 'junit:junit:4.10'
-    testImplementation 'org.robolectric:robolectric:3.0'
-    testImplementation 'org.robolectric:shadows-support-v4:3.0'
-    testImplementation 'org.robolectric:shadows-httpclient:3.0'
-    testImplementation 'com.squareup:fest-android:1.0.7'
-    testImplementation 'org.mockito:mockito-core:1.9.5'
 }
 
 def siteUrl = 'https://github.com/mopub/mopub-android-sdk'

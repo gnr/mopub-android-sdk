@@ -6,8 +6,6 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.TextureView;
 import android.view.View;
@@ -41,6 +39,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import static com.mopub.common.DataKeys.EVENT_DETAILS;
 import static com.mopub.common.DataKeys.IMPRESSION_MIN_VISIBLE_PERCENT;
@@ -606,8 +607,7 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
             } else if (mEnded) {
                 newState = VideoState.ENDED;
             } else {
-                if (mLatestVideoControllerState == NativeVideoController.STATE_PREPARING
-                        || mLatestVideoControllerState == NativeVideoController.STATE_IDLE) {
+                if (mLatestVideoControllerState == NativeVideoController.STATE_IDLE) {
                     newState = VideoState.LOADING;
                 } else if (mLatestVideoControllerState == NativeVideoController.STATE_BUFFERING) {
                     newState = VideoState.BUFFERING;
@@ -881,7 +881,7 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
                 @NonNull final VastVideoConfig vastVideoConfig,
                 @Nullable final EventDetails eventDetails) {
             return NativeVideoController.createForId(id, context, visibilityTrackingEvents,
-                    vastVideoConfig, eventDetails);
+                    vastVideoConfig);
         }
     }
 

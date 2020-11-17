@@ -5,8 +5,6 @@ import android.content.Context;
 import android.location.Location;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.mopub.common.AdFormat;
@@ -38,6 +36,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * Handles requesting Rewarded Video ads and mapping Rewarded Video SDK settings to the CustomEvent

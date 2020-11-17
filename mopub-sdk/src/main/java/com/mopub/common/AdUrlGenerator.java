@@ -2,7 +2,7 @@ package com.mopub.common;
 
 import android.content.Context;
 import android.location.Location;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.mopub.common.util.DateAndTime;

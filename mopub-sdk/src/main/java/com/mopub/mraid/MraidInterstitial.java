@@ -1,7 +1,7 @@
 package com.mopub.mraid;
 
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.mopub.mobileads.MraidActivity;
 import com.mopub.mobileads.ResponseBodyInterstitial;

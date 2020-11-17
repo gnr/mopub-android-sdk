@@ -1,38 +1,48 @@
+// Copyright 2018-2020 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.nativeads;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.AudioManager.OnAudioFocusChangeListener;
-import android.media.MediaCodec;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.Surface;
 import android.view.TextureView;
 
-import com.google.android.exoplayer.ExoPlaybackException;
-import com.google.android.exoplayer.ExoPlayer;
-import com.google.android.exoplayer.MediaCodecAudioTrackRenderer;
-import com.google.android.exoplayer.MediaCodecSelector;
-import com.google.android.exoplayer.MediaCodecVideoTrackRenderer;
-import com.google.android.exoplayer.extractor.Extractor;
-import com.google.android.exoplayer.extractor.ExtractorSampleSource;
-import com.google.android.exoplayer.extractor.mp4.Mp4Extractor;
-import com.google.android.exoplayer.upstream.Allocator;
-import com.google.android.exoplayer.upstream.DataSource;
-import com.google.android.exoplayer.upstream.DefaultAllocator;
+import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.LoadControl;
+import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.PlayerMessage;
+import com.google.android.exoplayer2.Renderer;
+import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
+import com.google.android.exoplayer2.extractor.Extractor;
+import com.google.android.exoplayer2.extractor.ExtractorsFactory;
+import com.google.android.exoplayer2.extractor.mp4.Mp4Extractor;
+import com.google.android.exoplayer2.mediacodec.MediaCodecSelector;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.trackselection.TrackSelector;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultAllocator;
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
+import com.google.android.exoplayer2.upstream.cache.Cache;
+import com.google.android.exoplayer2.upstream.cache.CacheDataSource;
+import com.google.android.exoplayer2.video.MediaCodecVideoRenderer;
 import com.mopub.common.Preconditions;
-import com.mopub.common.VisibleForTesting;
-import com.mopub.common.event.BaseEvent;
-import com.mopub.common.event.Event;
-import com.mopub.common.event.EventDetails;
-import com.mopub.common.event.MoPubEvents;
 import com.mopub.mobileads.RepeatingHandlerRunnable;
 import com.mopub.mobileads.VastTracker;
 import com.mopub.mobileads.VastVideoConfig;
@@ -46,12 +56,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 /**
  * Wrapper class around the {@link ExoPlayer} to provide a nice interface into the player along
  * with some helper methods. This class is not thread safe.
  */
-@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-public class NativeVideoController implements ExoPlayer.Listener,OnAudioFocusChangeListener {
+public class NativeVideoController extends ExoPlayer.DefaultEventListener implements OnAudioFocusChangeListener {
 
     public interface Listener {
         void onStateChanged(boolean playWhenReady, int playbackState);
@@ -61,12 +73,11 @@ public class NativeVideoController implements ExoPlayer.Listener,OnAudioFocusCha
     @NonNull private final static Map<Long, NativeVideoController> sManagerMap =
             new HashMap<Long, NativeVideoController>(4);
 
-    public static final int STATE_READY = ExoPlayer.STATE_READY;
-    public static final int STATE_BUFFERING = ExoPlayer.STATE_BUFFERING;
-    public static final int STATE_IDLE = ExoPlayer.STATE_IDLE;
-    public static final int STATE_PREPARING = ExoPlayer.STATE_PREPARING;
-    public static final int STATE_ENDED = ExoPlayer.STATE_ENDED;
-    public static final int STATE_CLEARED = ExoPlayer.STATE_ENDED + 1;
+    public static final int STATE_READY = Player.STATE_READY;
+    public static final int STATE_BUFFERING = Player.STATE_BUFFERING;
+    public static final int STATE_IDLE = Player.STATE_IDLE;
+    public static final int STATE_ENDED = Player.STATE_ENDED;
+    public static final int STATE_CLEARED = Player.STATE_ENDED + 1;
 
     public static final long RESUME_FINISHED_THRESHOLD = 750L;
 
@@ -75,7 +86,7 @@ public class NativeVideoController implements ExoPlayer.Listener,OnAudioFocusCha
 
     @NonNull private final Context mContext;
     @NonNull private final Handler mHandler;
-    @NonNull private final ExoPlayerFactory mExoPlayerFactory;
+    @NonNull private final MoPubExoPlayerFactory mMoPubExoPlayerFactory;
     @NonNull private VastVideoConfig mVastVideoConfig;
     @NonNull private NativeVideoProgressRunnable mNativeVideoProgressRunnable;
     @NonNull private AudioManager mAudioManager;
@@ -87,14 +98,13 @@ public class NativeVideoController implements ExoPlayer.Listener,OnAudioFocusCha
     @Nullable private WeakReference<Object> mOwnerRef;
     @Nullable private volatile ExoPlayer mExoPlayer;
     @Nullable private BitmapDrawable mFinalFrame;
-    @Nullable private MediaCodecAudioTrackRenderer mAudioTrackRenderer;
-    @Nullable private MediaCodecVideoTrackRenderer mVideoTrackRenderer;
-    @Nullable private EventDetails mEventDetails;
+    @Nullable private MediaCodecAudioRenderer mAudioRenderer;
+    @Nullable private MediaCodecVideoRenderer mVideoRenderer;
 
     private boolean mPlayWhenReady;
     private boolean mAudioEnabled;
     private boolean mAppAudioEnabled;
-    private int mPreviousExoPlayerState = ExoPlayer.STATE_IDLE;
+    private int mPreviousExoPlayerState = Player.STATE_IDLE;
     private boolean mExoPlayerStateStartedFromIdle = true;
 
     /**
@@ -106,34 +116,30 @@ public class NativeVideoController implements ExoPlayer.Listener,OnAudioFocusCha
      */
     @NonNull
     public static NativeVideoController createForId(final long id,
-            @NonNull final Context context,
-            @NonNull final List<VisibilityTrackingEvent> visibilityTrackingEvents,
-            @NonNull final VastVideoConfig vastVideoConfig,
-            @Nullable final EventDetails eventDetails) {
+                                                    @NonNull final Context context,
+                                                    @NonNull final List<VisibilityTrackingEvent> visibilityTrackingEvents,
+                                                    @NonNull final VastVideoConfig vastVideoConfig) {
         NativeVideoController nvc = new NativeVideoController(context, visibilityTrackingEvents,
-                vastVideoConfig, eventDetails);
+                vastVideoConfig);
         sManagerMap.put(id, nvc);
         return nvc;
     }
 
     @NonNull
-    @VisibleForTesting
     public static NativeVideoController createForId(final long id,
-            @NonNull final Context context,
-            @NonNull final VastVideoConfig vastVideoConfig,
-            @NonNull final NativeVideoProgressRunnable nativeVideoProgressRunnable,
-            @NonNull final ExoPlayerFactory exoPlayerFactory,
-            @Nullable final EventDetails eventDetails,
-            @NonNull final AudioManager audioManager) {
+                                                    @NonNull final Context context,
+                                                    @NonNull final VastVideoConfig vastVideoConfig,
+                                                    @NonNull final NativeVideoProgressRunnable nativeVideoProgressRunnable,
+                                                    @NonNull final MoPubExoPlayerFactory moPubExoPlayerFactory,
+                                                    @NonNull final AudioManager audioManager) {
         NativeVideoController nvc = new NativeVideoController(context, vastVideoConfig,
-                nativeVideoProgressRunnable, exoPlayerFactory, eventDetails, audioManager);
+                nativeVideoProgressRunnable, moPubExoPlayerFactory, audioManager);
         sManagerMap.put(id, nvc);
         return nvc;
     }
 
-    @VisibleForTesting
-    static void setForId(final long id,
-            @NonNull final NativeVideoController nativeVideoController) {
+    public static void setForId(final long id,
+                                @NonNull final NativeVideoController nativeVideoController) {
         sManagerMap.put(id, nativeVideoController);
     }
 
@@ -148,36 +154,32 @@ public class NativeVideoController implements ExoPlayer.Listener,OnAudioFocusCha
     }
 
     private NativeVideoController(@NonNull final Context context,
-            @NonNull final List<VisibilityTrackingEvent> visibilityTrackingEvents,
-            @NonNull final VastVideoConfig vastVideoConfig,
-            @Nullable final EventDetails eventDetails) {
+                                  @NonNull final List<VisibilityTrackingEvent> visibilityTrackingEvents,
+                                  @NonNull final VastVideoConfig vastVideoConfig) {
         this(context, vastVideoConfig,
                 new NativeVideoProgressRunnable(context,
                         new Handler(Looper.getMainLooper()),
                         visibilityTrackingEvents,
                         vastVideoConfig),
-                new ExoPlayerFactory(),
-                eventDetails, 
+                new MoPubExoPlayerFactory(),
                 (AudioManager) context.getSystemService(Context.AUDIO_SERVICE));
     }
 
     private NativeVideoController(@NonNull final Context context,
-            @NonNull final VastVideoConfig vastVideoConfig,
-            @NonNull final NativeVideoProgressRunnable nativeVideoProgressRunnable,
-            @NonNull final ExoPlayerFactory exoPlayerFactory,
-            @Nullable final EventDetails eventDetails,
-            @NonNull final AudioManager audioManager) {
+                                  @NonNull final VastVideoConfig vastVideoConfig,
+                                  @NonNull final NativeVideoProgressRunnable nativeVideoProgressRunnable,
+                                  @NonNull final MoPubExoPlayerFactory moPubExoPlayerFactory,
+                                  @NonNull final AudioManager audioManager) {
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(vastVideoConfig);
-        Preconditions.checkNotNull(exoPlayerFactory);
+        Preconditions.checkNotNull(moPubExoPlayerFactory);
         Preconditions.checkNotNull(audioManager);
 
         mContext = context.getApplicationContext();
         mHandler = new Handler(Looper.getMainLooper());
         mVastVideoConfig = vastVideoConfig;
         mNativeVideoProgressRunnable = nativeVideoProgressRunnable;
-        mExoPlayerFactory = exoPlayerFactory;
-        mEventDetails = eventDetails;
+        mMoPubExoPlayerFactory = moPubExoPlayerFactory;
         mAudioManager = audioManager;
     }
 
@@ -292,34 +294,27 @@ public class NativeVideoController implements ExoPlayer.Listener,OnAudioFocusCha
     }
 
     @Override
+    public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {}
+
+    @Override
+    public void onLoadingChanged(boolean isLoading) {}
+
+    @Override
     public void onPlayerStateChanged(final boolean playWhenReady, final int newState) {
         if (newState == STATE_ENDED && mFinalFrame == null) {
+            if (mExoPlayer == null || mSurface == null || mTextureView == null) {
+                //MoPubLog.log(CUSTOM, "onPlayerStateChanged called afer view has been recycled.");
+                return;
+            }
+
             mFinalFrame = new BitmapDrawable(mContext.getResources(), mTextureView.getBitmap());
             mNativeVideoProgressRunnable.requestStop();
         }
 
-        if (mPreviousExoPlayerState == ExoPlayer.STATE_READY && newState == ExoPlayer.STATE_BUFFERING) {
-            MoPubEvents.log(Event.createEventFromDetails(
-                    BaseEvent.Name.DOWNLOAD_BUFFERING,
-                    BaseEvent.Category.NATIVE_VIDEO,
-                    BaseEvent.SamplingRate.NATIVE_VIDEO,
-                    mEventDetails));
-        }
-
-        if (mExoPlayerStateStartedFromIdle &&
-                mPreviousExoPlayerState == ExoPlayer.STATE_BUFFERING &&
-                newState == ExoPlayer.STATE_READY) {
-            MoPubEvents.log(Event.createEventFromDetails(
-                    BaseEvent.Name.DOWNLOAD_VIDEO_READY,
-                    BaseEvent.Category.NATIVE_VIDEO,
-                    BaseEvent.SamplingRate.NATIVE_VIDEO,
-                    mEventDetails));
-        }
-
         mPreviousExoPlayerState = newState;
-        if (newState == ExoPlayer.STATE_READY) {
+        if (newState == Player.STATE_READY) {
             mExoPlayerStateStartedFromIdle = false;
-        } else if (newState == ExoPlayer.STATE_IDLE) {
+        } else if (newState == Player.STATE_IDLE) {
             mExoPlayerStateStartedFromIdle = true;
         }
 
@@ -346,23 +341,17 @@ public class NativeVideoController implements ExoPlayer.Listener,OnAudioFocusCha
     }
 
     @Override
-    public void onPlayWhenReadyCommitted() {}
-
-    @Override
     public void onPlayerError(ExoPlaybackException e) {
         if (mListener == null) {
             return;
         }
 
-        MoPubEvents.log(Event.createEventFromDetails(
-                BaseEvent.Name.ERROR_DURING_PLAYBACK,
-                BaseEvent.Category.NATIVE_VIDEO,
-                BaseEvent.SamplingRate.NATIVE_VIDEO,
-                mEventDetails));
-
         mListener.onError(e);
         mNativeVideoProgressRunnable.requestStop();
     }
+
+    @Override
+    public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {}
 
     /**
      * Handles forwarding the user to the specified click through url. Also, fires all unfired
@@ -403,28 +392,52 @@ public class NativeVideoController implements ExoPlayer.Listener,OnAudioFocusCha
 
     private void preparePlayer() {
         if (mExoPlayer == null) {
-            mExoPlayer = mExoPlayerFactory.newInstance(2, 1000, 5000);
+            mVideoRenderer = new MediaCodecVideoRenderer(mContext,
+                    MediaCodecSelector.DEFAULT, 0, mHandler, null, 10);
+            mAudioRenderer = new MediaCodecAudioRenderer(mContext, MediaCodecSelector.DEFAULT);
+            final DefaultAllocator allocator = new DefaultAllocator(true, BUFFER_SEGMENT_SIZE,
+                    BUFFER_SEGMENT_COUNT);
+
+            final DefaultLoadControl.Builder defaultLoadControlBuilder = new DefaultLoadControl.Builder();
+            defaultLoadControlBuilder.setAllocator(allocator);
+
+            mExoPlayer = mMoPubExoPlayerFactory.newInstance(
+                    mContext,
+                    new Renderer[]{mVideoRenderer, mAudioRenderer},
+                    new DefaultTrackSelector(),
+                    defaultLoadControlBuilder.createDefaultLoadControl());
+
             mNativeVideoProgressRunnable.setExoPlayer(mExoPlayer);
             mExoPlayer.addListener(this);
 
-            // Set up data sources
-            final Allocator allocator = new DefaultAllocator(BUFFER_SEGMENT_SIZE);
-            final Extractor extractor = new Mp4Extractor();
+            final DataSource.Factory dataSourceFactory = new DataSource.Factory() {
+                @Override
+                public DataSource createDataSource() {
+                    DataSource dataSource = new DefaultHttpDataSource("exo_demo",
+                            null);
+                    final Cache cache = MoPubCache.getCacheInstance(mContext);
 
-            final DataSource httpSource = new HttpDiskCompositeDataSource(mContext, "exo_demo",
-                    mEventDetails);
+                    if (cache != null) {
+                        dataSource = new CacheDataSource(cache, dataSource);
+                    }
 
-            final String videoUrl = mVastVideoConfig.getNetworkMediaFileUrl();
+                    return dataSource;
+                }
+            };
 
-            final ExtractorSampleSource sampleSource = new ExtractorSampleSource(Uri.parse(videoUrl),
-                    httpSource, allocator, BUFFER_SEGMENT_SIZE * BUFFER_SEGMENT_COUNT, extractor);
-            mVideoTrackRenderer = new MediaCodecVideoTrackRenderer(mContext, sampleSource,
-                    MediaCodecSelector.DEFAULT,
-                    MediaCodec.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING, 0, mHandler, null,
-                    10);
-            mAudioTrackRenderer = new MediaCodecAudioTrackRenderer(sampleSource,
-                    MediaCodecSelector.DEFAULT);
-            mExoPlayer.prepare(mAudioTrackRenderer, mVideoTrackRenderer);
+            final ExtractorsFactory extractorsFactory = new ExtractorsFactory() {
+                @Override
+                public Extractor[] createExtractors() {
+                    return new Extractor[] {new Mp4Extractor()};
+                }
+            };
+
+            final ExtractorMediaSource.Factory extractorMediaSourceFactory = new ExtractorMediaSource.Factory(dataSourceFactory);
+            extractorMediaSourceFactory.setExtractorsFactory(extractorsFactory);
+
+            final MediaSource mediaSource = extractorMediaSourceFactory.createMediaSource(Uri.parse(mVastVideoConfig.getNetworkMediaFileUrl()));
+
+            mExoPlayer.prepare(mediaSource);
             mNativeVideoProgressRunnable.startRepeating(50);
         }
 
@@ -445,31 +458,54 @@ public class NativeVideoController implements ExoPlayer.Listener,OnAudioFocusCha
     }
 
     private void setExoAudio(final float volume) {
-        Preconditions.checkArgument(volume >= 0.0f && volume <= 1.0f);
-        if (mExoPlayer == null) {
+        final ExoPlayer exoPlayer = mExoPlayer;
+        final MediaCodecAudioRenderer audioRenderer = mAudioRenderer;
+
+        if (exoPlayer == null || audioRenderer == null) {
             return;
         }
 
-        mExoPlayer.sendMessage(
-                mAudioTrackRenderer, MediaCodecAudioTrackRenderer.MSG_SET_VOLUME, volume);
+        final PlayerMessage playerMessage =  exoPlayer.createMessage(audioRenderer);
+
+        if (playerMessage == null) {
+            //MoPubLog.log(CUSTOM, "ExoPlayer.createMessage returned null.");
+            return;
+        }
+
+        playerMessage.setType(C.MSG_SET_VOLUME)
+                .setPayload(volume)
+                .send();
     }
 
     private void setExoSurface(@Nullable final Surface surface) {
-        if (mExoPlayer == null) {
+        final ExoPlayer exoPlayer = mExoPlayer;
+        final MediaCodecVideoRenderer videoRenderer = mVideoRenderer;
+
+        if (exoPlayer == null || videoRenderer == null) {
             return;
         }
 
-        mExoPlayer.sendMessage(
-                mVideoTrackRenderer, MediaCodecVideoTrackRenderer.MSG_SET_SURFACE, surface);
+        final PlayerMessage playerMessage =  exoPlayer.createMessage(videoRenderer);
+
+        if (playerMessage == null) {
+            //MoPubLog.log(CUSTOM, "ExoPlayer.createMessage returned null.");
+            return;
+        }
+
+        playerMessage.setType(C.MSG_SET_SURFACE)
+                .setPayload(surface)
+                .send();
     }
 
     /**
      * Created purely for the purpose of mocking to ease testing.
      */
-    @VisibleForTesting
-    static class ExoPlayerFactory {
-        public ExoPlayer newInstance(int rendererCount, int minBufferMs, int minRebufferMs) {
-            return ExoPlayer.Factory.newInstance(rendererCount, minBufferMs, minRebufferMs);
+    static class MoPubExoPlayerFactory {
+        public ExoPlayer newInstance(@NonNull final Context context,
+                                     @NonNull final Renderer[] renderers,
+                                     @NonNull final TrackSelector trackSelector,
+                                     @Nullable LoadControl loadControl) {
+            return ExoPlayerFactory.newInstance(context, renderers, trackSelector, loadControl);
         }
     }
 
@@ -483,6 +519,7 @@ public class NativeVideoController implements ExoPlayer.Listener,OnAudioFocusCha
         int totalRequiredPlayTimeMs;
         int totalQualifiedPlayCounter;
         boolean isTracked;
+        Integer minimumVisiblePx;
     }
 
     static class NativeVideoProgressRunnable extends RepeatingHandlerRunnable {
@@ -507,19 +544,18 @@ public class NativeVideoController implements ExoPlayer.Listener,OnAudioFocusCha
         private boolean mStopRequested;
 
         NativeVideoProgressRunnable(@NonNull final Context context,
-                @NonNull final Handler handler,
-                @NonNull final List<VisibilityTrackingEvent> visibilityTrackingEvents,
-                @NonNull final VastVideoConfig vastVideoConfig) {
+                                    @NonNull final Handler handler,
+                                    @NonNull final List<VisibilityTrackingEvent> visibilityTrackingEvents,
+                                    @NonNull final VastVideoConfig vastVideoConfig) {
             this(context, handler, visibilityTrackingEvents, new VisibilityChecker(),
                     vastVideoConfig);
         }
 
-        @VisibleForTesting
         NativeVideoProgressRunnable(@NonNull final Context context,
-                @NonNull final Handler handler,
-                @NonNull final List<VisibilityTrackingEvent> visibilityTrackingEvents,
-                @NonNull final VisibilityChecker visibilityChecker,
-                @NonNull final VastVideoConfig vastVideoConfig) {
+                                    @NonNull final Handler handler,
+                                    @NonNull final List<VisibilityTrackingEvent> visibilityTrackingEvents,
+                                    @NonNull final VisibilityChecker visibilityChecker,
+                                    @NonNull final VastVideoConfig vastVideoConfig) {
             super(handler);
             Preconditions.checkNotNull(context);
             Preconditions.checkNotNull(handler);
@@ -618,7 +654,6 @@ public class NativeVideoController implements ExoPlayer.Listener,OnAudioFocusCha
         }
 
         @Deprecated
-        @VisibleForTesting
         void setUpdateIntervalMillis(final long updateIntervalMillis) {
             mUpdateIntervalMillis = updateIntervalMillis;
         }

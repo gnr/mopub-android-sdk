@@ -1,10 +1,9 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
-import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPubLifecycleManager;
 import com.mopub.common.VisibleForTesting;

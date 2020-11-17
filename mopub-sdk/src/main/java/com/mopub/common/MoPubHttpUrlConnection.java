@@ -1,6 +1,6 @@
 package com.mopub.common;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.network.Networking;

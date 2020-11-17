@@ -1,7 +1,7 @@
 package com.mopub.network;
 
 import android.os.Looper;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.volley.Request;

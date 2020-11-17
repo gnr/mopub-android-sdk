@@ -1,7 +1,7 @@
 package com.mopub.nativeads;
 
 import android.app.Activity;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.mopub.common.DataKeys;
 import com.mopub.common.event.EventDetails;

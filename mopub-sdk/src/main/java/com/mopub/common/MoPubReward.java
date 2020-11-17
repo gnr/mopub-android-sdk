@@ -1,6 +1,6 @@
 package com.mopub.common;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 /**
  * Represents a reward to the user for completing a rewarded task like watching a video.

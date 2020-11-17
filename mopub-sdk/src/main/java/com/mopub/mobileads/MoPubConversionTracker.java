@@ -2,7 +2,7 @@ package com.mopub.mobileads;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.mopub.common.BaseUrlGenerator;
 import com.mopub.common.ClientMetadata;

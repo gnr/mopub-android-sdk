@@ -1,6 +1,6 @@
 package com.mopub.common.event;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.mopub.common.Preconditions;
 import com.mopub.common.VisibleForTesting;

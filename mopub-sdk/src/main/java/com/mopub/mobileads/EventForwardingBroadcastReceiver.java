@@ -3,7 +3,7 @@ package com.mopub.mobileads;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import static com.mopub.mobileads.CustomEventInterstitial.CustomEventInterstitialListener;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_INVALID_STATE;

@@ -3,9 +3,9 @@ package com.mopub.network;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.util.LruCache;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.collection.LruCache;
 import android.webkit.WebView;
 
 import com.mopub.common.ClientMetadata;

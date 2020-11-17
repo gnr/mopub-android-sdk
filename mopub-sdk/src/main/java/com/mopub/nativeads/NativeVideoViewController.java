@@ -9,8 +9,6 @@ import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -26,6 +24,9 @@ import com.mopub.mobileads.VastVideoConfig;
 import com.mopub.nativeads.MoPubCustomEventVideoNative.MoPubVideoNativeAd;
 import com.mopub.nativeads.NativeFullScreenVideoView.Mode;
 import com.mopub.nativeads.NativeVideoController.NativeVideoProgressRunnable;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 public class NativeVideoViewController extends BaseVideoViewController implements TextureView
@@ -246,8 +247,7 @@ public class NativeVideoViewController extends BaseVideoViewController implement
         } else if (mEnded) {
             newState = VideoState.ENDED;
         } else {
-            if (mLatestVideoControllerState == NativeVideoController.STATE_PREPARING
-                    || mLatestVideoControllerState == NativeVideoController.STATE_IDLE) {
+            if (mLatestVideoControllerState == NativeVideoController.STATE_IDLE) {
                 newState = VideoState.LOADING;
             } else if (mLatestVideoControllerState == NativeVideoController.STATE_BUFFERING) {
                 newState = VideoState.BUFFERING;

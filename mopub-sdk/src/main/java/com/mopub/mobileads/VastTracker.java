@@ -1,10 +1,10 @@
 package com.mopub.mobileads;
 
-import android.support.annotation.NonNull;
-
 import com.mopub.common.Preconditions;
 
 import java.io.Serializable;
+
+import androidx.annotation.NonNull;
 
 /**
  * State encapsulation for VAST tracking URLs that may or may not only be called once. For example,

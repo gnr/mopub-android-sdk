@@ -1,6 +1,6 @@
 package com.mopub.mobileads;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.mopub.volley.NetworkResponse;
 import com.mopub.volley.Request;

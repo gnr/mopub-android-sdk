@@ -1,15 +1,12 @@
 package com.mopub.mobileads;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mopub.common.Preconditions;
 import com.mopub.mobileads.util.XmlUtils;
 
 import org.w3c.dom.Node;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This XML manager handles Wrapper nodes. Wrappers redirect to other VAST documents (which may

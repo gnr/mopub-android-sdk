@@ -1,6 +1,6 @@
 package com.mopub.nativeads;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.mopub.common.VisibleForTesting;
 import com.mopub.network.MoPubNetworkError;

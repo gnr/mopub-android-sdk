@@ -1,6 +1,6 @@
 package com.mopub.nativeads;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public enum NativeErrorCode {
     EMPTY_AD_RESPONSE("Server returned empty response."),
